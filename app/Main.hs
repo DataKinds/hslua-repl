@@ -1,5 +1,7 @@
 module Main where
 
+{-# LANGUAGE BangPatterns #-}
+
 import Foreign.Lua
 import System.Console.Readline hiding (getPrompt)
 import System.IO
@@ -58,8 +60,7 @@ handleCommands luaString = case luaString of
     "" -> replLoop
     ":quit" -> return ()
     ":help" -> do
-        let v = luaVersion
-        let _ = v >>= printHelp
+        lift $ luaVersion >>= printHelp
         replLoop
     '=':expr -> handleCommands ("return (" ++ expr ++ ")")
     str -> do
@@ -68,7 +69,7 @@ handleCommands luaString = case luaString of
                 modify (updateReplPrompt (drop 8 luaString))
                 replLoop
             _ -> do
-                let _ = eplLoop str
+                lift $ eplLoop str
                 replLoop
 
 -- Handles the input and output IO actions and passes control off to `handleCommands`.

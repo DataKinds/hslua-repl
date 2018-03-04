@@ -51,33 +51,29 @@ printHelp v = liftIO $ putStrLn ("hslua-repl v. 1.0.0\nCopyright 2018 Aearnus\nU
         tupleToString (cmd, desc) = cmd ++ (replicate (12 - length cmd) ' ') ++ " --   " ++ desc
         commands = intercalate "\n" $ map ((++) "    ") $ map tupleToString cs
 
-handleCommands :: String    -- the input string
+--Handles the input and output and passes control back to replLoop
+handleCommands :: String                      -- the input string
                   -> StateT ReplState Lua ()  -- the replLoop function
                   -> StateT ReplState Lua ()
-handleCommands luaString replLoop | luaString == "" = runReplLoop >> return ()
-                                  -- this is currently the only command
+handleCommands luaString replLoop | luaString == "" = runReplLoop
                                   | luaString == ":quit" = return ()
                                   | luaString == ":help" = do
                                       let v = luaVersion
                                       let _ = v >>= printHelp
                                       runReplLoop
-                                      return ()
                                   | take 7 luaString == ":prompt" = do
                                       modify (updateReplPrompt (drop 8 luaString))
                                       runReplLoop
-                                      return ()
                                   -- guaranteed not to be empty because of the first guard
                                   | (head luaString) == '=' = handleCommands ("return (" ++ (tail luaString) ++ ")") replLoop
                                   | otherwise = do
                                       let _ = eplLoop luaString
-                                      --s <- get
-                                      --runStateT replLoop s
                                       runReplLoop
                                   where
                                       runReplLoop = do
                                           replLoop
 
-
+-- Handles the input and output IO actions and passes control off to `handleCommands`.
 replLoop :: StateT ReplState Lua ()
 replLoop = do
     replState <- get

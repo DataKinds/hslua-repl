@@ -7,7 +7,8 @@ import System.Console.Readline hiding (getPrompt)
 import System.IO
 import qualified Data.ByteString.Char8 as B
 import Data.List
-import Control.Monad.State.Lazy
+import Control.Monad.State
+import Debug.Trace
 
 newtype ReplState = ReplState {
     replPrompt :: String

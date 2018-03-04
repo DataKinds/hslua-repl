@@ -53,28 +53,23 @@ printHelp v = liftIO $ putStrLn ("hslua-repl v. 1.0.0\nCopyright 2018 Aearnus\nU
 
 --Handles the input and output and passes control back to replLoop
 handleCommands :: String                      -- the input string
-                  -> StateT ReplState Lua ()  -- the replLoop function
                   -> StateT ReplState Lua ()
-handleCommands luaString replLoop | luaString == "" = runReplLoop >> return ()
-                                  | luaString == ":quit" = return ()
-                                  | luaString == ":help" = do
-                                      let v = luaVersion
-                                      let _ = v >>= printHelp
-                                      runReplLoop
-                                      return ()
-                                  | take 7 luaString == ":prompt" = do
-                                      modify (updateReplPrompt (drop 8 luaString))
-                                      runReplLoop
-                                      return ()
-                                  -- guaranteed not to be empty because of the first guard
-                                  | (head luaString) == '=' = handleCommands ("return (" ++ (tail luaString) ++ ")") replLoop
-                                  | otherwise = do
-                                      let _ = eplLoop luaString
-                                      runReplLoop
-                                      return ()
-                                  where
-                                      runReplLoop = do
-                                          replLoop
+handleCommands luaString = case luaString of
+    "" -> replLoop
+    ":quit" -> return ()
+    ":help" -> do
+        let v = luaVersion
+        let _ = v >>= printHelp
+        replLoop
+    '=':expr -> handleCommands ("return (" ++ expr ++ ")")
+    str -> do
+        case (words str) of
+            [":prompt", p] -> do
+                modify (updateReplPrompt (drop 8 luaString))
+                replLoop
+            _ -> do
+                let _ = eplLoop str
+                replLoop
 
 -- Handles the input and output IO actions and passes control off to `handleCommands`.
 replLoop :: StateT ReplState Lua ()
@@ -85,7 +80,7 @@ replLoop = do
         Nothing -> replLoop >> (return ())
         Just str -> do
             liftIO $ addHistory str
-            handleCommands str replLoop
+            handleCommands str
 
 main :: IO ()
 main = runLua $ do

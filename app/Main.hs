@@ -7,6 +7,15 @@ import qualified Data.ByteString.Char8 as B
 import Data.List
 import Control.Monad.State.Lazy
 
+newtype ReplState = ReplState {
+    replPrompt :: String
+}
+defaultReplState :: ReplState
+defaultReplState = ReplState { replPrompt = "Lua$ " }
+updateReplPrompt :: String -> ReplState -> ReplState
+updateReplPrompt p rS = rS { replPrompt = p }
+
+
 eplLoop :: String -> Lua ()
 eplLoop input = do
     getglobal "print"
@@ -39,46 +48,48 @@ printHelp v = liftIO $ putStrLn ("hslua-repl v. 1.0.0\nCopyright 2018 Aearnus\nU
             [(":quit", "Exits the interpreter."),
              (":prompt", "Sets the interpreter prompt."),
              (":help", "Prints this text.")]
-        commands = intercalate "\n" $ map (\tuple -> (++) "    " $ (fst tuple) ++ "   --   " ++ (snd tuple)) cs
-
-prompt :: Bool -> State String String
-prompt willUpdate = do
-    p <- get
-    if (willUpdate) then
-        do
-            put p
-            return p
-    else
-        return p
-setPrompt :: String -> String
-setPrompt p = execState (prompt True) p
-getPrompt :: String
-getPrompt = execState (prompt False) ""
+        tupleToString (cmd, desc) = cmd ++ (replicate (12 - length cmd) ' ') ++ " --   " ++ desc
+        commands = intercalate "\n" $ map ((++) "    ") $ map tupleToString cs
 
 handleCommands :: String    -- the input string
-                  -> Lua a  -- the replLoop function
-                  -> Lua ()
-handleCommands luaString replLoop | luaString == "" = replLoop >> return ()
+                  -> StateT ReplState Lua ()  -- the replLoop function
+                  -> StateT ReplState Lua ()
+handleCommands luaString replLoop | luaString == "" = runReplLoop >> return ()
                                   -- this is currently the only command
                                   | luaString == ":quit" = return ()
-                                  | luaString == ":help" = (luaVersion >>= printHelp) >> replLoop >> return ()
+                                  | luaString == ":help" = do
+                                      let v = luaVersion
+                                      let _ = v >>= printHelp
+                                      runReplLoop
+                                      return ()
                                   | take 7 luaString == ":prompt" = do
-                                      let _ = setPrompt (drop 8 luaString)
-                                      replLoop
+                                      modify (updateReplPrompt (drop 8 luaString))
+                                      runReplLoop
                                       return ()
                                   -- guaranteed not to be empty because of the first guard
                                   | (head luaString) == '=' = handleCommands ("return (" ++ (tail luaString) ++ ")") replLoop
                                   | otherwise = do
-                                      eplLoop luaString
-                                      replLoop
-                                      return ()
+                                      let _ = eplLoop luaString
+                                      --s <- get
+                                      --runStateT replLoop s
+                                      runReplLoop
+                                  where
+                                      runReplLoop = do
+                                          replLoop
+
+
+replLoop :: StateT ReplState Lua ()
+replLoop = do
+    replState <- get
+    maybeLuaString <- liftIO $ readline (replPrompt replState)
+    case maybeLuaString of
+        Nothing -> replLoop >> (return ())
+        Just str -> do
+            liftIO $ addHistory str
+            handleCommands str replLoop
 
 main :: IO ()
 main = runLua $ do
             openbase
-            let _ = setPrompt "Lua$ "
-            let replLoop = do maybeLuaString <- liftIO $ readline getPrompt
-                              case maybeLuaString of
-                                  Nothing -> replLoop >> (return ())
-                                  Just str -> (liftIO $ addHistory str) >> (handleCommands str replLoop)
-            replLoop
+            runStateT replLoop defaultReplState
+            return ()

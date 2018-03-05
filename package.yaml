@@ -25,6 +25,7 @@ dependencies:
 - bytestring
 - readline
 - mtl
+- directory
 
 library:
   source-dirs: src

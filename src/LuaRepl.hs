@@ -13,7 +13,7 @@ import ReplState
 
 runLine :: String -> Lua ()
 runLine input = do
-    getglobal "print"
+    getglobal "__replPrint"
     status <- loadstring input
     case status of
         OK -> do

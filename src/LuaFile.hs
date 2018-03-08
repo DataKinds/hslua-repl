@@ -7,6 +7,7 @@ import qualified Data.ByteString.Char8 as B
 import Data.List
 import System.Directory
 import Control.Monad.State
+import Debug.Trace
 
 import ReplState
 
@@ -41,9 +42,10 @@ runFile fileName = do
         case luaStatus of
             OK -> do
                 liftIO $ putStrLn "Successfully loaded."
+                modify (updateLoadedFiles fileName)
                 rS <- get
                 let filesToPrompt = intercalate " " $ loadedFiles rS
-                modify (updateLoadedFiles ("Lua " ++ filesToPrompt ++ "$ "))
+                modify (updateReplPrompt ("Lua " ++ filesToPrompt ++ "$ "))
             Yield -> do
                 liftIO $ putStrLn "Successfully loaded, yielded into coroutine."
             _ -> do

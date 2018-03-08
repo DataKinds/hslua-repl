@@ -15,7 +15,9 @@ import LuaPrelude
 
 main :: IO ()
 main = runLua $ do
-            openbase
+            openlibs
+            opendebug
+            openmath
             runBlock luaPrelude
             --liftIO $ setCompletionEntryFunction autocomplete
             runStateT replLoop defaultReplState

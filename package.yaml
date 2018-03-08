@@ -26,6 +26,9 @@ dependencies:
 - readline
 - mtl
 - directory
+- neat-interpolation
+- text
+- debug
 
 library:
   source-dirs: src

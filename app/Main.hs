@@ -10,9 +10,13 @@ import Control.Monad.State
 import LuaRepl
 import LuaFile
 import ReplState
+import Autocomplete
+import LuaPrelude
 
 main :: IO ()
 main = runLua $ do
             openbase
+            runBlock luaPrelude
+            --liftIO $ setCompletionEntryFunction autocomplete
             runStateT replLoop defaultReplState
             return ()

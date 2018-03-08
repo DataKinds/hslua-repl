@@ -52,22 +52,26 @@ handleCommands :: String                      -- the input string
                   -> StateT ReplState Lua ()
 handleCommands luaString = case luaString of
     "" -> replLoop
-    ":quit" -> return ()
-    ":help" -> do
-        lift $ luaVersion >>= printHelp
-        replLoop
     '=':expr -> handleCommands ("return (" ++ expr ++ ")")
-    str -> do
-        case (words str) of
-            [":prompt", p] -> do
+    ':':cmd -> case cmd of
+        "quit" -> return ()
+        "help" -> do
+            lift $ luaVersion >>= printHelp
+            replLoop
+        _ -> case (words cmd) of
+            ["prompt", p] -> do
                 modify (updateReplPrompt (drop 8 luaString))
                 replLoop
-            [":load", f] -> do
+            ["load", f] -> do
                 runFile f
                 replLoop
             _ -> do
-                lift $ runLine str
+                liftIO $ putStrLn "Unrecognized REPL command."
                 replLoop
+    str -> do
+        lift $ runLine str
+        replLoop
+
 
 -- Handles the input and output IO actions and passes control off to `handleCommands`.
 replLoop :: StateT ReplState Lua ()

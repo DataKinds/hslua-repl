@@ -39,19 +39,13 @@ end
 function __replGlobalNames()
     gnames = {}
     for k,v in pairs(_G) do
-        if (k == "_G") then
-            gnames[#gnames + 1] = k
-        else
-            if (type(v) == "table") then
-                --todo: actual recursion, i'm too tired for this BULLSHIT
-                for _k,_v in pairs(v) do
-                    gnames[#gnames + 1] = _k
-                end
-            else
-                gnames[#gnames + 1] = k
+        gnames[#gnames + 1] = k
+        if (type(v) == "table") and (k ~= "_G") and (k ~= "gnames") then
+            --todo: actual recursion, i'm too tired for this BULLSHIT
+            for _k,_v in pairs(v) do
+                gnames[#gnames + 1] = _k
             end
         end
-        __replPrint(gnames)
     end
     return gnames
 end

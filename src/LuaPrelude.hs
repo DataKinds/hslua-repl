@@ -18,7 +18,8 @@ function __replShow(object, depth)
         elseif (type(object) == "number") then
             out = tostring(object)
         elseif (type(object) == "function") then
-            out = "<function>"
+            debugData = debug.getinfo(object)
+            out = "<" .. debugData.what .. "function>"
         elseif (type(object) == "userdata") then
             out = "<userdata>"
         elseif (type(object) == "table") then
@@ -41,7 +42,7 @@ function __replGlobalNames()
     for k,v in pairs(_G) do
         gnames[#gnames + 1] = k
         if (type(v) == "table") and (k ~= "_G") and (k ~= "gnames") then
-            --todo: actual recursion, i'm too tired for this BULLSHIT
+            --todo: actual recursion
             for _k,_v in pairs(v) do
                 gnames[#gnames + 1] = k .. "." .. _k
             end

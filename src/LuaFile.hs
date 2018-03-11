@@ -7,18 +7,20 @@ import qualified Data.ByteString.Char8 as B
 import Data.List
 import System.Directory
 import Control.Monad.State
+import Control.Monad
 import Debug.Trace
 
 import ReplState
+import LuaPCall
 
 runBlock :: String -> Lua Status
 runBlock input = do
     status <- loadstring input
     case status of
         OK -> do
-            call 0 1 -- call the loaded function
+            void $ handlePCall 0 1 -- call the loaded function
         Yield -> do
-            call 0 1
+            void $ handlePCall 0 1
         ErrSyntax -> printError "SYNTAX"
         ErrMem -> printError "OUT OF MEMORY"
         ErrGcmm -> printError "GARBAGE COLLECTOR"

@@ -49,4 +49,7 @@ function __replGlobalNames()
     end
     return gnames
 end
+function __replErrorHandler(error)
+    print(error)
+end
 |]

@@ -10,6 +10,7 @@ import Control.Monad.State
 import LuaFile
 import ReplState
 import Autocomplete
+import LuaPCall
 
 
 runLine :: String -> Lua ()
@@ -18,8 +19,10 @@ runLine input = do
     status <- loadstring input
     case status of
         OK -> do
-            call 0 1 -- call the loaded function
-            call 1 0 -- print the result
+            runtimeStatus <- handlePCall 0 1
+            case runtimeStatus of -- call the loaded function
+                OK -> call 1 0 -- print the result
+                _ -> return ()
         Yield -> return ()
         ErrSyntax -> printError "SYNTAX"
         ErrMem -> printError "OUT OF MEMORY"

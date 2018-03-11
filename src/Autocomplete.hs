@@ -4,7 +4,7 @@ import Foreign.Lua
 import qualified Data.ByteString.Char8 as B
 import Data.List
 import Control.Monad.Reader
-import System.Console.Readline (setCompletionEntryFunction)
+import System.Console.Readline (setCompletionEntryFunction, filenameCompletionFunction)
 
 dumpStack :: Lua ()
 dumpStack = do
@@ -45,7 +45,8 @@ autocomplete names s = filter (isPrefixOf s) names
 autocompleteWrapper :: LuaState -> String -> IO [String]
 autocompleteWrapper ls s = do
     names <- getNames ls
-    return $ autocomplete names s
+    filenames <- filenameCompletionFunction s
+    return $ (autocomplete names s) ++ filenames
 
 setAutocomplete :: Lua ()
 setAutocomplete = do

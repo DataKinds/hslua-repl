@@ -11,7 +11,7 @@ import LuaFile
 import ReplState
 import Autocomplete
 import LuaPCall
-
+import LuaRocks
 
 runLine :: String -> Lua ()
 runLine input = do
@@ -40,8 +40,17 @@ luaVersion = do
     getglobal "_VERSION"
     version <- tostring stackTop
     return $ B.unpack version
-printHelp :: String -> Lua ()
-printHelp v = liftIO $ putStrLn ("hslua-repl v. 1.0.0\nCopyright 2018 Aearnus\nUses the `hslua` Haskell library to interact with " ++ v ++ ".\nAvailable commands:\n" ++ commands)
+
+replStartInfo :: Lua ()
+replStartInfo = do
+    version <- luaVersion
+    lR <- liftIO canAccessLuaRocks
+    liftIO $ putStrLn ("hslua-repl v. 1.0.0\nCopyright 2018 Aearnus\nUses the `hslua` Haskell library to interact with " ++ version ++ ".\nIs LuaRocks loaded? " ++ (show lR) ++ ".\n")
+
+printHelp :: Lua ()
+printHelp = do
+    replStartInfo
+    liftIO $ putStrLn ("Available commands:\n" ++ commands)
     where
         cs =
             [("quit", "Exits the interpreter."),
@@ -62,7 +71,7 @@ handleCommands luaString = case luaString of
     ':':cmd -> case cmd of
         "quit" -> return ()
         "help" -> do
-            lift $ luaVersion >>= printHelp
+            lift $ printHelp
             replLoop
         "reload" -> do
             rS <- get

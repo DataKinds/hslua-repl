@@ -29,6 +29,7 @@ dependencies:
 - neat-interpolation
 - text
 - debug
+- directory
 
 library:
   source-dirs: src

@@ -18,6 +18,7 @@ main = runLua $ do
             openlibs
             opendebug
             openmath
+            replStartInfo
             runBlock luaPrelude
             setAutocomplete
             runStateT replLoop defaultReplState

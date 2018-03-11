@@ -7,33 +7,11 @@ import qualified Data.ByteString.Char8 as B
 import Data.List
 import Control.Monad.State
 
-import LuaFile
+import LuaRun
 import ReplState
 import Autocomplete
 import LuaPCall
 import LuaRocks
-
-runLine :: String -> Lua ()
-runLine input = do
-    getglobal "__replPrint"
-    status <- loadstring input
-    case status of
-        OK -> do
-            runtimeStatus <- handlePCall 0 1
-            case runtimeStatus of -- call the loaded function
-                OK -> call 1 0 -- print the result
-                _ -> return ()
-        Yield -> return ()
-        ErrSyntax -> printError "SYNTAX"
-        ErrMem -> printError "OUT OF MEMORY"
-        ErrGcmm -> printError "GARBAGE COLLECTOR"
-        ErrFile -> printError "FILE"
-        ErrRun -> printError "RUNTIME"
-        ErrErr -> printError "ERROR"
-    where
-        printError errorType = do
-            luaError <- tostring stackTop
-            liftIO $ putStrLn (errorType ++ " ERROR\n    Lua:" ++ B.unpack luaError)
 
 luaVersion :: Lua String
 luaVersion = do
@@ -58,6 +36,7 @@ printHelp = do
              ("load", "Load a Lua file from the current directory."),
              ("reload", "Reloads the currently loaded Lua files."),
              ("globals", "Prints a list of the currently loaded globals (from _G)."),
+             ("lr", "Interact with LuaRocks if it is loaded. Type `:lr help` for more."),
              ("help", "Prints this text.")]
         tupleToString (cmd, desc) = ':':cmd ++ (replicate (12 - length cmd) ' ') ++ " --   " ++ desc
         commands = intercalate "\n" $ map ((++) "    ") $ map tupleToString cs

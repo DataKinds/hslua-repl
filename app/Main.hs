@@ -8,7 +8,7 @@ import Data.List
 import Control.Monad.State
 
 import LuaRepl
-import LuaFile
+import LuaRun
 import ReplState
 import Autocomplete
 import LuaPrelude

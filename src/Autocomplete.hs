@@ -2,11 +2,9 @@ module Autocomplete where
 
 import Foreign.Lua
 import qualified Data.ByteString.Char8 as B
-import Debug.Trace
 import Data.List
 import Control.Monad.Reader
-import System.Console.Readline hiding (getPrompt)
-import Control.Monad
+import System.Console.Readline (setCompletionEntryFunction)
 
 dumpStack :: Lua ()
 dumpStack = do

@@ -43,7 +43,7 @@ function __replGlobalNames()
         if (type(v) == "table") and (k ~= "_G") and (k ~= "gnames") then
             --todo: actual recursion, i'm too tired for this BULLSHIT
             for _k,_v in pairs(v) do
-                gnames[#gnames + 1] = _k
+                gnames[#gnames + 1] = k .. "." .. _k
             end
         end
     end

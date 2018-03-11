@@ -19,7 +19,7 @@ function __replShow(object, depth)
             out = tostring(object)
         elseif (type(object) == "function") then
             debugData = debug.getinfo(object)
-            out = "<" .. debugData.what .. "function>"
+            out = "<" .. debugData.what .. " function>"
         elseif (type(object) == "userdata") then
             out = "<userdata>"
         elseif (type(object) == "table") then

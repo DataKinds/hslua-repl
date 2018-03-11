@@ -35,7 +35,7 @@ library:
   source-dirs: src
 
 executables:
-  hslua-repl-exe:
+  repl:
     main:                Main.hs
     source-dirs:         app
     ghc-options:

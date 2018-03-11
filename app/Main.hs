@@ -21,6 +21,7 @@ main = runLua $ do
             runBlock luaPrelude
             -- TODO: wtf?
             --liftIO $ setCompletionEntryFunction autocomplete
-            liftIO $ setCompletionEntryFunction $ Just filenameCompletionFunction
+            setAutocomplete
+            --liftIO $ setCompletionEntryFunction $ Just filenameCompletionFunction
             runStateT replLoop defaultReplState
             return ()

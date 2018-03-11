@@ -4,6 +4,9 @@ import Foreign.Lua
 import qualified Data.ByteString.Char8 as B
 import Debug.Trace
 import Data.List
+import Control.Monad.Reader
+import System.Console.Readline hiding (getPrompt)
+import Control.Monad
 
 dumpStack :: Lua ()
 dumpStack = do
@@ -18,8 +21,8 @@ dumpStack = do
             s <- tostring si
             return ("type: " ++ ts ++ "    value: " ++ (B.unpack s))
 
-getNames :: Lua [String]
-getNames = do
+getNames :: LuaState -> IO [String]
+getNames = runReaderT (unLua $ do
     getglobal "__replGlobalNames"
     call 0 1
     -- now, the stack is populated with a name table and nothing else important
@@ -28,7 +31,7 @@ getNames = do
     -- before finishing this function, clean the stack
     -- pop the table we pushed at the start
     pop 1
-    return names
+    return names)
     where
         getNthString n = do
             -- assume table is on top of stack
@@ -38,7 +41,15 @@ getNames = do
             pop 1
             (return . B.unpack) s
 
-autocomplete :: String -> Lua [String]
-autocomplete s = do
-    names <- getNames
-    return $ sequence $ filter (isPrefixOf s) names
+autocomplete :: [String] -> String -> [String]
+autocomplete names s = filter (isPrefixOf s) names
+
+autocompleteWrapper :: LuaState -> String -> IO [String]
+autocompleteWrapper ls s = do
+    names <- getNames ls
+    return $ autocomplete names s
+
+setAutocomplete :: Lua ()
+setAutocomplete = do
+    luaStatePtr <- luaState
+    liftIO $ setCompletionEntryFunction $ Just (autocompleteWrapper luaStatePtr)

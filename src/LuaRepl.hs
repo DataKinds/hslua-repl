@@ -68,7 +68,9 @@ handleCommands luaString = case luaString of
             liftIO $ putStrLn $ "Reloaded " ++ (show $ length fs) ++ " files."
             replLoop
         "globals" -> do
-            lift $ getNames >>= (\ns -> liftIO $ mapM_ putStrLn ns)
+            ls <- lift luaState
+            names <- lift $ liftIO $ getNames ls
+            lift $ liftIO $ mapM_ putStrLn names
             replLoop
         _ -> case (words cmd) of
             ["prompt", p] -> do

@@ -23,8 +23,11 @@ getNames = do
     call 0 1
     -- now, the stack is populated with a name table and nothing else important
     globalNameLen <- rawlen stackTop
-    liftIO $ putStrLn (show globalNameLen)
-    sequence $ map getNthString [1..(fromIntegral globalNameLen)]
+    names <- sequence $ map getNthString [1..(fromIntegral globalNameLen)]
+    -- before finishing this function, clean the stack
+    -- pop the table we pushed at the start
+    pop 1
+    return names
     where
         getNthString n = do
             -- assume table is on top of stack

@@ -19,7 +19,8 @@ main = runLua $ do
             opendebug
             openmath
             runBlock luaPrelude
-            liftIO $ setCompletionEntryFunction $ Just autocomplete
-            --liftIO $ setCompletionEntryFunction filenameCompletionFunction
+            -- TODO: wtf?
+            --liftIO $ setCompletionEntryFunction autocomplete
+            liftIO $ setCompletionEntryFunction $ Just filenameCompletionFunction
             runStateT replLoop defaultReplState
             return ()

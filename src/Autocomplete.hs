@@ -38,7 +38,7 @@ getNames = do
             pop 1
             (return . B.unpack) s
 
-
-autocomplete :: String -> IO [String]
---autocomplete s = return $ filter (isPrefixOf s) getNames
-autocomplete s = return []
+autocomplete :: String -> Lua [String]
+autocomplete s = do
+    names <- getNames
+    return $ sequence $ filter (isPrefixOf s) names

@@ -3,6 +3,7 @@ module Autocomplete where
 import Foreign.Lua
 import qualified Data.ByteString.Char8 as B
 import Debug.Trace
+import Data.List
 
 dumpStack :: Lua ()
 dumpStack = do
@@ -37,5 +38,7 @@ getNames = do
             pop 1
             (return . B.unpack) s
 
-autocomplete :: Maybe (String -> IO [String])
-autocomplete = Just (\s -> trace s (return []))
+
+autocomplete :: String -> IO [String]
+--autocomplete s = return $ filter (isPrefixOf s) getNames
+autocomplete s = return []

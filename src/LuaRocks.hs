@@ -21,3 +21,6 @@ canAccessLuaRocks = do
     let dirs = map fst dirsFilteredPred
     files <- sequence $ map listDirectory dirs
     return $ (any . any) (isInfixOf "luarocks") files
+
+luaRocksInstall :: String -> IO Bool
+luaRocksInstall pkgName = return True

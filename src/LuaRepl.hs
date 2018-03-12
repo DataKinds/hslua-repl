@@ -70,6 +70,9 @@ handleCommands luaString = case luaString of
             ["load", f] -> do
                 runFile f
                 replLoop
+            ["lr", "help"] -> do
+                
+                replLoop
             _ -> do
                 liftIO $ putStrLn "Unrecognized REPL command."
                 replLoop

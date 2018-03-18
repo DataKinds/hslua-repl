@@ -30,6 +30,7 @@ dependencies:
 - text
 - debug
 - directory
+- process
 
 library:
   source-dirs: src

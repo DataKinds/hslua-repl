@@ -12,12 +12,14 @@ import LuaRun
 import ReplState
 import Autocomplete
 import LuaPrelude
+import LuaRocks
 
 main :: IO ()
 main = runLua $ do
             openlibs
             opendebug
             openmath
+            liftIO getLuaRocksSandbox
             replStartInfo
             runBlock luaPrelude
             setAutocomplete

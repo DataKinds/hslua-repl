@@ -3,10 +3,10 @@
 module LuaPrelude where
 
 import NeatInterpolation
-import Data.Text (unpack, Text)
+import Data.Text (unpack, pack, replace, Text)
 
-luaPrelude :: String
-luaPrelude = unpack [text|
+luaPrelude :: String -> String
+luaPrelude homeDir = unpack $ replace (pack "<HOMEDIR>") (pack homeDir) $ [text|
 function __replShow(object, depth)
     maxDepth = 10
     out = ""
@@ -53,4 +53,9 @@ end
 function __replErrorHandler(error)
     print(error)
 end
+function __replPathLocs(loc)
+    return ("<HOMEDIR>/.local/hslua-repl-sandbox/" .. loc .. ";/usr/local/" .. loc .. ";")
+end
+package.path = __replPathLocs("share/lua/5.3/?.lua") .. __replPathLocs("share/lua/5.3/?/init.lua") .. __replPathLocs("lib/lua/5.3/?.lua") .. __replPathLocs("lib/lua/5.3/?/init.lua") .. "./?.lua;./?/init.lua"
+package.cpath = __replPathLocs("lib/lua/5.3/?.so") .. __replPathLocs("lib/lua/5.3/loadall.so") .. "./?.so"
 |]

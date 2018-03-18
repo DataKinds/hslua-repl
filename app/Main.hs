@@ -3,6 +3,7 @@ module Main where
 import Foreign.Lua
 import System.Console.Readline hiding (getPrompt)
 import System.IO
+import System.Environment
 import qualified Data.ByteString.Char8 as B
 import Data.List
 import Control.Monad.State
@@ -21,7 +22,8 @@ main = runLua $ do
             openmath
             liftIO getLuaRocksSandbox
             replStartInfo
-            runBlock luaPrelude
+            homeDir <- liftIO $ getEnv "HOME"
+            runBlock $ luaPrelude homeDir
             setAutocomplete
             runStateT replLoop defaultReplState
             return ()

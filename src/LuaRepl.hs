@@ -35,8 +35,7 @@ printHelp = do
     liftIO $ putStrLn ("Available commands:\n" ++ commands)
     where
         cs =
-            [("help", "Print this text."),
-             ("quit", "Exits the interpreter."),
+            [("quit", "Exits the interpreter."),
              ("prompt <string>", "Sets the interpreter prompt."),
              ("load <file path>", "Load a Lua file from the current directory."),
              ("reload", "Reloads the currently loaded Lua files."),

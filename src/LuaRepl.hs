@@ -23,7 +23,11 @@ replStartInfo :: Lua ()
 replStartInfo = do
     version <- luaVersion
     lR <- liftIO canAccessLuaRocks
-    liftIO $ putStrLn ("hslua-repl v. 1.0.0\nCopyright 2018 Aearnus\nUses the `hslua` Haskell library to interact with " ++ version ++ ".\nIs LuaRocks loaded? " ++ (show lR) ++ ".\n")
+    liftIO $ putStrLn ("hslua-repl v. 1.0.0\
+    \\nCopyright 2018 Aearnus\
+    \\nUses the `hslua` Haskell library to interact with " ++ version ++ ".\
+    \\nType `:help` to get help.\
+    \\nIs LuaRocks loaded? " ++ (show lR) ++ ".\n")
 
 printHelp :: Lua ()
 printHelp = do
@@ -31,15 +35,28 @@ printHelp = do
     liftIO $ putStrLn ("Available commands:\n" ++ commands)
     where
         cs =
-            [("quit", "Exits the interpreter."),
-             ("prompt", "Sets the interpreter prompt."),
-             ("load", "Load a Lua file from the current directory."),
+            [("help", "Print this text."),
+             ("quit", "Exits the interpreter."),
+             ("prompt <string>", "Sets the interpreter prompt."),
+             ("load <file path>", "Load a Lua file from the current directory."),
              ("reload", "Reloads the currently loaded Lua files."),
              ("globals", "Prints a list of the currently loaded globals (from _G)."),
-             ("lr", "Interact with LuaRocks if it is loaded. Type `:lr help` for more."),
+             ("lr <command>", "Interact with LuaRocks if it is loaded. Type `:lr help` for more."),
              ("help", "Prints this text.")]
-        tupleToString (cmd, desc) = ':':cmd ++ (replicate (12 - length cmd) ' ') ++ " --   " ++ desc
-        commands = intercalate "\n" $ map ((++) "    ") $ map tupleToString cs
+        tupleToString (cmd, desc) = ':':cmd ++ (replicate (20 - length cmd) ' ') ++ " --   " ++ desc
+        commands = intercalate "\n" $ map ((++) "  ") $ map tupleToString cs
+
+printLuaRocksHelp :: IO ()
+printLuaRocksHelp = do
+    lR <- canAccessLuaRocks
+    putStrLn ("Is LuaRocks loaded? " ++ (show lR) ++ ".\nAvailable LuaRocks commands:\n" ++ commands)
+    where
+        cs =
+            [("help", "Print this text."),
+             ("install <rock name>", "Install a rock from LuaRocks.")]
+        tupleToString (cmd, desc) = ":lr " ++ cmd ++ (replicate (20 - length cmd) ' ') ++ " --   " ++ desc
+        commands = intercalate "\n" $ map ((++) "  ") $ map tupleToString cs
+
 
 --Handles the input and output and passes control back to replLoop
 handleCommands :: String                      -- the input string
@@ -67,11 +84,26 @@ handleCommands luaString = case luaString of
             ["prompt", p] -> do
                 modify (updateReplPrompt (drop 8 luaString))
                 replLoop
+            --handle prompt edge cases
+            "prompt":_ -> do
+                liftIO $ putStrLn "usage: :prompt <string>"
+                replLoop
             ["load", f] -> do
                 runFile f
                 replLoop
+            --and load edge cases
+            "load":_ -> do
+                liftIO $ putStrLn "usage: :load <file path>"
+                replLoop
             ["lr", "help"] -> do
-                
+                liftIO printLuaRocksHelp
+                replLoop
+            ["lr", "install", package] -> do
+                liftIO $ luaRocksInstall package
+                replLoop
+            --interpret an unrecognized lr command as a cry for help
+            "lr":_ -> do
+                liftIO printLuaRocksHelp
                 replLoop
             _ -> do
                 liftIO $ putStrLn "Unrecognized REPL command."

@@ -52,6 +52,8 @@ luaRocksInstall pkgName = do
     lRs <- getLuaRocks
     tree <- getLuaRocksSandbox
     case lRs of
-        [] -> error "luaRocksInstall called when LuaRocks not loaded."
+        [] -> do
+            putStrLn "luaRocksInstall called while LuaRocks was not loaded, so nothing will happen."
+            return ()
         lR:_ -> do
             callProcess lR ["--tree="++tree, "install", pkgName]

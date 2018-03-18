@@ -23,7 +23,9 @@ runLine input = do
             case runtimeStatus of -- call the loaded function
                 OK -> call 1 0 -- print the result
                 _ -> return ()
-        Yield -> return ()
+        Yield -> do
+            liftIO $ putStrLn "runLine yield"
+            return ()
         ErrSyntax -> printError "SYNTAX"
         ErrMem -> printError "OUT OF MEMORY"
         ErrGcmm -> printError "GARBAGE COLLECTOR"

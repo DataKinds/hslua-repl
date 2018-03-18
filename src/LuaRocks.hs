@@ -45,7 +45,7 @@ getLuaRocks = do
     -- all dirs are guarenteed to be directories
     let dirs = map fst (filter snd dirsWithPred)
     files <- sequence $ map listDirectory dirs
-    return $ concat $ map (filter (isSuffixOf "luarocks")) files
+    return $ concat $ filter (isSuffixOf "luarocks") <$> files
 
 luaRocksInstall :: String -> IO ()
 luaRocksInstall pkgName = do
@@ -57,3 +57,13 @@ luaRocksInstall pkgName = do
             return ()
         lR:_ -> do
             callProcess lR ["--tree="++tree, "install", pkgName]
+
+luaRocksSearch :: String -> IO ()
+luaRocksSearch pkgName = do
+    lRs <- getLuaRocks
+    case lRs of
+        [] -> do
+            putStrLn "luaRocksSearch called while LuaRocks was not loaded, so nothing will happen."
+            return ()
+        lR:_ -> do
+            callProcess lR ["search", pkgName]

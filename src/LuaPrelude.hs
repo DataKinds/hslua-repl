@@ -8,8 +8,8 @@ import Data.Text (unpack, pack, replace, Text)
 luaPrelude :: String -> String
 luaPrelude homeDir = unpack $ replace (pack "<HOMEDIR>") (pack homeDir) $ [text|
 function __replShow(object, depth)
-    maxDepth = 10
-    out = ""
+    local maxDepth = 10
+    local out = ""
     if (depth < maxDepth) then
         if (type(object) == "nil") then
             out = "nil"
@@ -38,7 +38,7 @@ function __replPrint(object)
     print("=> " .. __replShow(object, 0))
 end
 function __replGlobalNames()
-    gnames = {}
+    local gnames = {}
     for k,v in pairs(_G) do
         gnames[#gnames + 1] = k
         if (type(v) == "table") and (k ~= "_G") and (k ~= "gnames") then
@@ -58,4 +58,15 @@ function __replPathLocs(loc)
 end
 package.path = __replPathLocs("share/lua/5.3/?.lua") .. __replPathLocs("share/lua/5.3/?/init.lua") .. __replPathLocs("lib/lua/5.3/?.lua") .. __replPathLocs("lib/lua/5.3/?/init.lua") .. "./?.lua;./?/init.lua"
 package.cpath = __replPathLocs("lib/lua/5.3/?.so") .. __replPathLocs("lib/lua/5.3/loadall.so") .. "./?.so"
+__replRequire = require
+function require(str)
+    local status, result = pcall(__replRequire, str)
+    if status then
+        print("Successfully loaded package " .. str)
+        print("If you want full REPL functionality, please use `:load` and not `require()`.")
+        return result
+    else
+        print(result)
+    end
+end
 |]

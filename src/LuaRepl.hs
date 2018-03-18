@@ -52,7 +52,8 @@ printLuaRocksHelp = do
     where
         cs =
             [("help", "Print this text."),
-             ("install <rock name>", "Install a rock from LuaRocks.")]
+             ("install <rock name>", "Install a rock from LuaRocks."),
+             ("search <rock name>", "Search for a rock on the LuaRocks servers.")]
         tupleToString (cmd, desc) = ":lr " ++ cmd ++ (replicate (20 - length cmd) ' ') ++ " --   " ++ desc
         commands = intercalate "\n" $ map ((++) "  ") $ map tupleToString cs
 
@@ -99,6 +100,9 @@ handleCommands luaString = case luaString of
                 replLoop
             ["lr", "install", package] -> do
                 liftIO $ luaRocksInstall package
+                replLoop
+            ["lr", "search", package] -> do
+                liftIO $ luaRocksSearch package
                 replLoop
             --interpret an unrecognized lr command as a cry for help
             "lr":_ -> do
